@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.MotionLayout
 import androidx.constraintlayout.compose.MotionLayoutDebugFlags
@@ -49,8 +50,11 @@ fun Loadings() {
 //    BoxLoading()
 //    BoxMotionLoading()
 
-        BoxBoundLoading(5, 450, 120)
-        BoxBounceMotionLoading()
+//        BoxBoundLoading(5, 450, 120)
+//        BoxBounceMotionLoading()
+
+        GridCardLoading(600, 200)
+        GridCardMotionLoading()
     }
 }
 
@@ -234,7 +238,9 @@ fun BoxBoundLoading(count: Int, duration: Int, delay: Int) {
     val easing = remember { CubicBezierEasing(0.42f, 0f, 0.58f, 1.0f) }
 
     Row(
-        Modifier.height(60.dp).padding(horizontal = 10.dp),
+        Modifier
+            .height(60.dp)
+            .padding(horizontal = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -253,6 +259,148 @@ fun BoxBoundLoading(count: Int, duration: Int, delay: Int) {
                     .scale(scaleX = 1f, scaleY = 1f + easing.transform(scale) * 4)
                     .background(Color.Blue)
             )
+        }
+    }
+}
+
+@Composable
+fun GridCardLoading(duration: Int, delay: Int) {
+    val totalDuration = delay * 5 + duration
+
+    val progress by rememberInfiniteTransition().animateValue(
+        initialValue = 0,
+        targetValue = totalDuration,
+        typeConverter = Int.VectorConverter,
+        animationSpec = infiniteRepeatable(tween(totalDuration, easing = LinearEasing))
+    )
+
+    val easing = remember { CubicBezierEasing(0.42f, 0f, 0.58f, 1.0f) }
+
+    Box(
+        Modifier
+            .height(60.dp)
+            .padding(horizontal = 10.dp),
+    ) {
+        val delayList = listOf(
+            0,
+            delay,
+            delay * 2,
+            delay,
+            delay * 2,
+            delay * 3,
+            delay * 2,
+            delay * 3,
+            delay * 4
+        )
+        val posList = listOf(
+            DpOffset(0.dp, 0.dp),
+            DpOffset(10.dp, 0.dp),
+            DpOffset(20.dp, 0.dp),
+            DpOffset(0.dp, 10.dp),
+            DpOffset(10.dp, 10.dp),
+            DpOffset(20.dp, 10.dp),
+            DpOffset(0.dp, 20.dp),
+            DpOffset(10.dp, 20.dp),
+            DpOffset(20.dp, 20.dp),
+        )
+
+        for (i in 0 until 9) {
+            val offset = posList[i]
+            val start = delayList[i]
+            val progress = progress - start
+
+            val scale =
+                if (0 <= progress && progress <= duration.toFloat() / 2) progress.toFloat() / duration.toFloat()
+                else if (duration.toFloat() / 2 < progress && progress <= duration) 1f - (progress.toFloat() / duration.toFloat())
+                else 0f
+
+            Box(
+                modifier = Modifier
+                    .size(width = 10.dp, height = 10.dp)
+                    .offset(offset.x,offset.y)
+                    .scale( 1f - easing.transform(scale) * 2)
+                    .background(Color.Blue)
+            )
+        }
+    }
+}
+
+@Composable
+fun GridCardMotionLoading() {
+    val progress by rememberInfiniteTransition().animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            tween(
+                1500,
+                easing = CubicBezierEasing(0.42f, 0f, 0.58f, 1.0f)
+            )
+        )
+    )
+
+    Column {
+        MotionLayout(
+            motionScene = MotionScene(
+                """{
+                ConstraintSets: {   // all ConstraintSets
+                  start: {
+                      h1: { width : 10, height: 10, },
+                      h2: { width : 10, height: 10, start: ['h1', 'end', 0], bottom: ['h1', 'bottom', 0] },
+                      h3: { width : 10, height: 10, start: ['h2', 'end', 0], bottom: ['h2', 'bottom', 0] },
+                      h4: { width : 10, height: 10, start: ['h1', 'start', 0], top: ['h1', 'bottom', 0] },
+                      h5: { width : 10, height: 10, start: ['h2', 'start', 0], top: ['h2', 'bottom', 0] },
+                      h6: { width : 10, height: 10, start: ['h3', 'start', 0], top: ['h3', 'bottom', 0] },
+                      h7: { width : 10, height: 10, start: ['h4', 'start', 0], top: ['h4', 'bottom', 0] },
+                      h8: { width : 10, height: 10, start: ['h5', 'start', 0], top: ['h5', 'bottom', 0] },
+                      h9: { width : 10, height: 10, start: ['h6', 'start', 0], top: ['h6', 'bottom', 0] },
+                  },
+                  end: {
+                      h1: { width : 10, height: 10, },
+                      h2: { width : 10, height: 10, start: ['h1', 'end', 0], bottom: ['h1', 'bottom', 0] },
+                      h3: { width : 10, height: 10, start: ['h2', 'end', 0], bottom: ['h2', 'bottom', 0] },
+                      h4: { width : 10, height: 10, start: ['h1', 'start', 0], top: ['h1', 'bottom', 0] },
+                      h5: { width : 10, height: 10, start: ['h2', 'start', 0], top: ['h2', 'bottom', 0] },
+                      h6: { width : 10, height: 10, start: ['h3', 'start', 0], top: ['h3', 'bottom', 0] },
+                      h7: { width : 10, height: 10, start: ['h4', 'start', 0], top: ['h4', 'bottom', 0] },
+                      h8: { width : 10, height: 10, start: ['h5', 'start', 0], top: ['h5', 'bottom', 0] },
+                      h9: { width : 10, height: 10, start: ['h6', 'start', 0], top: ['h6', 'bottom', 0] },
+                  }
+                },
+               Transitions: {           
+                  default: {            
+                    from: 'start',      
+                    to: 'end',          
+                    KeyFrames: {        
+                      KeyAttributes: [  
+                        {target: ['h1'], frames: [0,10,20,30,40,50,60,70,80,90,100], scaleX: [1,0.5,0.1,0,0.1,0.5,1,1,1,1,1], scaleY: [1,0.5,0.1,0,0.1,0.5,1,1,1,1,1]},    
+                        {target: ['h2'], frames: [0,10,20,30,40,50,60,70,80,90,100], scaleX: [1,1,0.5,0.1,0,0.1,0.5,1,1,1,1], scaleY: [1,1,0.5,0.1,0,0.1,0.5,1,1,1,1]},
+                        {target: ['h4'], frames: [0,10,20,30,40,50,60,70,80,90,100], scaleX: [1,1,0.5,0.1,0,0.1,0.5,1,1,1,1], scaleY: [1,1,0.5,0.1,0,0.1,0.5,1,1,1,1]},
+                        {target: ['h3'], frames: [0,10,20,30,40,50,60,70,80,90,100], scaleX: [1,1,1,0.5,0.1,0,0.1,0.5,1,1,1], scaleY: [1,1,1,0.5,0.1,0,0.1,0.5,1,1,1]},
+                        {target: ['h5'], frames: [0,10,20,30,40,50,60,70,80,90,100], scaleX: [1,1,1,0.5,0.1,0,0.1,0.5,1,1,1], scaleY: [1,1,1,0.5,0.1,0,0.1,0.5,1,1,1]},
+                        {target: ['h7'], frames: [0,10,20,30,40,50,60,70,80,90,100], scaleX: [1,1,1,0.5,0.1,0,0.1,0.5,1,1,1], scaleY: [1,1,1,0.5,0.1,0,0.1,0.5,1,1,1]},
+                        {target: ['h6'], frames: [0,10,20,30,40,50,60,70,80,90,100], scaleX: [1,1,1,1,0.5,0.1,0,0.1,0.5,1,1], scaleY: [1,1,1,1,0.5,0.1,0,0.1,0.5,1,1]},
+                        {target: ['h8'], frames: [0,10,20,30,40,50,60,70,80,90,100], scaleX: [1,1,1,1,0.5,0.1,0,0.1,0.5,1,1], scaleY: [1,1,1,1,0.5,0.1,0,0.1,0.5,1,1]},
+                        {target: ['h9'], frames: [0,10,20,30,40,50,60,70,80,90,100], scaleX: [1,1,1,1,1,0.5,0.1,0,0.1,0.5,1], scaleY: [1,1,1,1,1,0.5,0.1,0,0.1,0.5,1]},
+                      ]
+                    }
+                  }
+                }
+            }"""
+            ),
+            progress = progress,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+        ) {
+            val colors = arrayListOf(Color.Black, Color.Green, Color.Blue, Color.Cyan)
+
+            for (i in 1..9) {
+                Box(
+                    modifier = Modifier
+                        .layoutId("h$i", "h$i")
+                        .background(colors[i % colors.size])
+                )
+            }
         }
     }
 }
