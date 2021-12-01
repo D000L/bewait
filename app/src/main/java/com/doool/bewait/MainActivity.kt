@@ -14,7 +14,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.DpOffset
@@ -43,7 +45,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Loadings() {
-    Column {
+    Column(Modifier.fillMaxSize().background(Color(0xffd35400))) {
 //    WaveLoading(7, 1000, 300)
 //    WaveMotionLoading()
 //
@@ -53,11 +55,260 @@ fun Loadings() {
 //        BoxBoundLoading(5, 450, 120)
 //        BoxBounceMotionLoading()
 
-        GridCardLoading(600, 200)
-        GridCardMotionLoading()
+//        GridCardLoading(600, 200)
+//        GridCardMotionLoading()
+//
+//        BoxRotationLoading()
+//        BoxRotationMotionLoading(
+//            Modifier
+//                .fillMaxSize()
+//                .background(Color.White)
+//        )
+
+        CircleRotationMotionLoading(
+            Modifier
+                .fillMaxSize()
+                .background(Color(0xffd35400))
+        )
     }
 }
 
+@Composable
+fun BoxRotationLoading(distance: Int = 120) {
+
+    val progress by rememberInfiniteTransition().animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            tween(
+                900,
+                easing = CubicBezierEasing(0.76f, 0.99f, 0.28f, .03f)
+            )
+        )
+    )
+
+    Box(
+        Modifier
+            .height(60.dp)
+            .padding(horizontal = 10.dp),
+    ) {
+
+        val scale =
+            if (0 <= progress && progress <= 0.5f) 1f - progress
+            else if (0.5f < progress && progress <= 1f) progress
+            else 0f
+
+        val position1 =
+            if (0 <= progress && progress <= 0.5f) Offset(progress * 2 * distance, 0f)
+            else if (0.5f < progress && progress <= 1f) Offset(
+                distance.toFloat(),
+                (progress - 0.5f) * 2 * distance
+            )
+            else Offset(0f, 0f)
+
+        Box(
+            modifier = Modifier
+                .size(20.dp)
+                .graphicsLayer(
+                    translationX = position1.x,
+                    translationY = position1.y,
+                    scaleX = scale,
+                    scaleY = scale,
+                    rotationZ = -180 * progress
+                )
+                .background(Color.Blue)
+        )
+
+        val position2 =
+            if (0 <= progress && progress <= 0.5f) Offset(
+                distance - progress * 2 * distance,
+                distance.toFloat()
+            )
+            else if (0.5f < progress && progress <= 1f) Offset(
+                0f,
+                distance - (progress - 0.5f) * 2 * distance
+            )
+            else Offset(0f, 0f)
+
+        Box(
+            modifier = Modifier
+                .size(20.dp)
+                .graphicsLayer(
+                    translationX = position2.x,
+                    translationY = position2.y,
+                    scaleX = scale,
+                    scaleY = scale,
+                    rotationZ = -180 * progress
+                )
+                .background(Color.Blue)
+        )
+    }
+}
+
+@Composable
+fun BoxRotationMotionLoading(modifier: Modifier = Modifier, distance: Int = 120) {
+    val progress by rememberInfiniteTransition().animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            tween(
+                900,
+                easing = CubicBezierEasing(0.76f, 0.99f, 0.28f, .03f)
+            )
+        )
+    )
+
+    val distance = distance / 2
+
+    MotionLayout(
+        modifier = modifier,
+        motionScene = MotionScene(
+            """{
+                ConstraintSets: {   // all ConstraintSets
+                  start:   {
+                      h1: { center: 'parent' },
+                      h2: { center: 'parent' },
+                  },
+                  end: {
+                      h1: { center: 'parent' },
+                      h2: { center: 'parent' },
+                  }
+                },
+                Transitions: {           
+                  default: {            
+                    from: 'start',      
+                    to: 'end',          
+                    KeyFrames: {        
+                      KeyAttributes: [  
+                        {target: ['h1'], 
+                         frames: [0,50,100], 
+                        translationX : [${-distance},$distance,$distance], 
+                        translationY : [${-distance},${-distance},$distance]},
+                        
+                         {target: ['h2'], 
+                         frames: [0,50,100], 
+                        translationX : [$distance,${-distance},${-distance}], 
+                        translationY : [$distance,$distance,${-distance}]},
+                        
+                        {target: ['h1','h2'], 
+                        frames: [0,50,100], 
+                        rotationZ : [0,-90,-180], 
+                        scaleX : [ 1, 0.5, 1],
+                        scaleY : [ 1, 0.5, 1]
+                        }
+                      ]
+                    }
+                  }
+                }
+            }"""
+        ),
+        debug = EnumSet.of(MotionLayoutDebugFlags.SHOW_ALL),
+        progress = progress
+    ) {
+        Box(
+            modifier = Modifier
+                .layoutId("h1", "h1")
+                .size(20.dp)
+                .background(Color.Green)
+        )
+        Box(
+            modifier = Modifier
+                .layoutId("h2", "h2")
+                .size(20.dp)
+                .background(Color.Green)
+        )
+    }
+}
+
+@Composable
+fun CircleRotationMotionLoading(modifier: Modifier = Modifier) {
+    val progress by rememberInfiniteTransition().animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            tween(
+                1200,
+                easing = LinearEasing
+            )
+        )
+    )
+
+    MotionLayout(
+        modifier = Modifier.rotate(40f).requiredSize(25.dp),
+        motionScene = MotionScene(
+            """{
+                ConstraintSets: {   // all ConstraintSets
+                  start:   {
+                      h1: { top : ['parent','top',0], centerHorizontally : 'parent' },
+                    h2: { bottom : ['parent','bottom',0], centerHorizontally : 'parent' },
+                  },
+                  end: {  
+                      h1: { bottom : ['parent','bottom',0], centerHorizontally : 'parent' },
+                     h2: { top : ['parent','top',0], centerHorizontally : 'parent'  },
+                  }
+                },
+                Transitions: {           
+                  default: {            
+                    from: 'start',      
+                    to: 'end',
+                    KeyFrames: {        
+                     KeyPositions: [
+                            {
+                               target: ['h1'], 
+                               frames: [12,25,50,75,88],
+                               percentX: [ 0.62,0.83,1,0.83,0.62],
+                               percentY: [ 0.01,0.12,0.5,0.88,0.99]
+                            },
+                              {
+                               target: ['h2'], 
+                               frames: [12,25,50,75,88],
+                               percentX: [0.38,0.17,0,0.17,0.38],
+                               percentY: [0.99,0.88,0.5,0.12,0.01]
+                            }
+                        ],
+                        
+                      KeyAttributes: [
+                        {target: ['h1'], 
+                        frames: [0,20,100],
+                        scaleX  : [0, 0,  1],
+                        scaleY  : [0, 0,  1]
+                        },
+                        {target: ['h2'], 
+                        frames: [0,20,100],
+                        scaleX  : [1, 0.5, 0],
+                        scaleY  : [1, 0.5, 0],
+                        },
+                      ],
+
+                    }
+                  }
+                }
+            }"""
+        ),
+//        debug = EnumSet.of(MotionLayoutDebugFlags.SHOW_ALL),
+        progress = progress
+    ) {
+        Box(
+            modifier = Modifier
+                .layoutId("h1", "h1")
+                .size(15.dp)
+                .background(Color.White, shape = CircleShape)
+        )
+        Box(
+            modifier = Modifier
+                .layoutId("h2", "h2")
+                .size(15.dp)
+                .background(Color.White, shape = CircleShape)
+        )
+
+//        Box(
+//            modifier = Modifier
+//                .layoutId("h2", "h2")
+//                .size(20.dp)
+//                .background(Color.Green, shape = CircleShape)
+//        )
+    }
+}
 
 @Composable
 fun WaveLoading(count: Int, duration: Int, delay: Int) {
@@ -317,8 +568,8 @@ fun GridCardLoading(duration: Int, delay: Int) {
             Box(
                 modifier = Modifier
                     .size(width = 10.dp, height = 10.dp)
-                    .offset(offset.x,offset.y)
-                    .scale( 1f - easing.transform(scale) * 2)
+                    .offset(offset.x, offset.y)
+                    .scale(1f - easing.transform(scale) * 2)
                     .background(Color.Blue)
             )
         }
