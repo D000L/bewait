@@ -10,9 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -20,6 +18,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.MotionLayout
@@ -27,8 +26,9 @@ import androidx.constraintlayout.compose.MotionLayoutDebugFlags
 import androidx.constraintlayout.compose.MotionScene
 import androidx.constraintlayout.compose.layoutId
 import com.doool.bewait.ui.theme.BewaitTheme
-import java.lang.Math.abs
+import java.lang.Math.*
 import java.util.*
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +75,8 @@ fun Loadings() {
 //                .background(Color(0xffd35400))
 //        )
 
-        CircleSpreadMotionLoading()
+        CircleSpreadLoading(80)
+//        CircleSpreadMotionLoading()
     }
 }
 
@@ -733,6 +734,53 @@ fun BoxBounceMotionLoading() {
     }
 }
 
+@Composable
+fun CircleSpreadLoading(radius : Int){
+    var progress by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(Unit) {
+        val start = System.currentTimeMillis()
+        while (true) {
+            withInfiniteAnimationFrameMillis {
+                progress = (System.currentTimeMillis() - start).toFloat() / 1000f
+            }
+        }
+    }
+
+    val delay = 1f / 12f
+    val duration = 0.6f
+
+    BoxWithConstraints(
+        Modifier
+            .height(80.dp)
+            .padding(horizontal = 10.dp),
+    ) {
+        val density = LocalDensity.current
+        val center = with(density) { Offset(maxWidth.toPx() / 2f,maxHeight.toPx() /2f) }
+
+        for (i in 0 until 12) {
+            val degree = i * 30.0
+            val x = radius * cos(toRadians(degree)) + center.x
+            val y = radius * sin(toRadians(degree)) + center.y
+
+            val delay = delay * i
+
+            val realProgress = (progress - delay) % 1f
+            val scale =  if(0f <= realProgress && realProgress <= duration / 2) (realProgress) / duration
+            else if( duration / 2 <= realProgress && realProgress <= duration) 1f - ((realProgress) / duration)
+            else 0f
+
+            Box(
+                modifier = Modifier
+                    .size(size = 10.dp)
+                    .graphicsLayer(translationX = x.toFloat(), translationY = y.toFloat())
+                    .scale(scale * 2)
+                    .background(Color.Blue, CircleShape)
+            )
+        }
+    }
+}
+
 private fun getString(number: Int): String {
     val frame = mutableListOf<Int>()
     val list = mutableListOf<Float>()
@@ -742,7 +790,7 @@ private fun getString(number: Int): String {
         if(number>9){
             for (j in -4..4) {
                 val number = number - 12
-                val f = number * term + j * 5
+                val f = number * term + j * 6
                 if (0 <= f && f <= 100) {
                     frame.add(f)
                     list.add(1f - abs(j * 0.25f))
@@ -761,7 +809,7 @@ private fun getString(number: Int): String {
     }else {
         for (j in -4..4) {
             val number = number
-            val f = number * term + j * 5
+            val f = number * term + j * 6
             if (0 <= f && f <= 100) {
                 frame.add(f)
                 list.add(1f - abs(j * 0.25f))
@@ -828,18 +876,18 @@ public fun CircleSpreadMotionLoading() {
                   start: {
                       Variables: {
                         angle: { from: 0, step: 30 },
-                        distance: 100,
+                        distance: 20,
                         mylist: { tag: 'circle' },
                       },
-                      Generate: { mylist: { circular: ['parent', 'angle', 100] } },
+                      Generate: { mylist: { circular: ['parent', 'angle', 'distance'] } },
                   },
                   end:  {
                         Variables: {
                           angle: { from: 0, step: 30 },
-                          distance: 100,
+                          distance: 20,
                           mylist: { tag: 'circle' },
                         },
-                        Generate: { mylist: { circular: ['parent', 'angle', 100] } },
+                        Generate: { mylist: { circular: ['parent', 'angle','distance'] } },
                     }
                 },
                Transitions: {           
@@ -867,8 +915,8 @@ public fun CircleSpreadMotionLoading() {
                 Box(
                     modifier = Modifier
                         .layoutId("h$i", "circle")
-                        .size(30.dp)
-                        .background(colors[i % colors.size])
+                        .size(10.dp)
+                        .background(colors[i % colors.size], shape = CircleShape)
                 )
             }
         }
