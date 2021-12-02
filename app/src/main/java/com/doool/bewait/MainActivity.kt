@@ -1,6 +1,7 @@
 package com.doool.bewait
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.*
@@ -45,19 +46,22 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Loadings() {
-    Column(Modifier.fillMaxSize().background(Color(0xffd35400))) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(Color(0xffd35400))) {
 //    WaveLoading(7, 1000, 300)
 //    WaveMotionLoading()
 //
 //    BoxLoading()
 //    BoxMotionLoading()
-
+//
 //        BoxBoundLoading(5, 450, 120)
 //        BoxBounceMotionLoading()
-
+//
 //        GridCardLoading(600, 200)
 //        GridCardMotionLoading()
-//
+
 //        BoxRotationLoading()
 //        BoxRotationMotionLoading(
 //            Modifier
@@ -65,11 +69,13 @@ fun Loadings() {
 //                .background(Color.White)
 //        )
 
-        CircleRotationMotionLoading(
-            Modifier
-                .fillMaxSize()
-                .background(Color(0xffd35400))
-        )
+//        CircleRotationMotionLoading(
+//            Modifier
+//                .fillMaxSize()
+//                .background(Color(0xffd35400))
+//        )
+
+        CircleSpreadMotionLoading()
     }
 }
 
@@ -234,7 +240,9 @@ fun CircleRotationMotionLoading(modifier: Modifier = Modifier) {
     )
 
     MotionLayout(
-        modifier = Modifier.rotate(40f).requiredSize(25.dp),
+        modifier = Modifier
+            .rotate(40f)
+            .requiredSize(25.dp),
         motionScene = MotionScene(
             """{
                 ConstraintSets: {   // all ConstraintSets
@@ -726,26 +734,80 @@ fun BoxBounceMotionLoading() {
 }
 
 private fun getString(number: Int): String {
-    val list = MutableList(20, { 0.0f })
+    val frame = mutableListOf<Int>()
+    val list = mutableListOf<Float>()
+    val term = 8
 
-    for (i in -2 until 2) {
-        if ((i + number) in 0 until 12) {
-            list[i + number] = (1f - abs(i) * 0.2f)
+    if(number<=12) {
+        if(number>9){
+            for (j in -4..4) {
+                val number = number - 12
+                val f = number * term + j * 5
+                if (0 <= f && f <= 100) {
+                    frame.add(f)
+                    list.add(1f - abs(j * 0.25f))
+                }
+            }
         }
-        if ((i + number + 12) in 0 until 12) {
-            list[i + number + 12] = (1f - abs(i) * 0.2f)
+        for (j in -4..4) {
+            val number = number
+            val f = number * term + j * 5
+            if (0 <= f && f <= 100) {
+                frame.add(f)
+                list.add(1f - abs(j * 0.25f))
+            }
+        }
+
+    }else {
+        for (j in -4..4) {
+            val number = number
+            val f = number * term + j * 5
+            if (0 <= f && f <= 100) {
+                frame.add(f)
+                list.add(1f - abs(j * 0.25f))
+            }
+        }
+        if(frame.contains(100) == false){
+            frame.add(100)
+            list.add(list.lastOrNull() ?: 0f)
+        }else{
+            val index = frame.indexOf(100)
+            list[index] = 0f
+        }
+        if(frame.contains(0) == false){
+            frame.add(0)
+            list.add(list.first())
+        }
+    }
+
+    if(number <= 12){
+
+        if(frame.contains(100) == false){
+            frame.add(100)
+            list.add(list.lastOrNull() ?: 0f)
+        }else{
+            val index = frame.indexOf(100)
+            list[index] = 0f
+        }
+        if(frame.contains(0) == false){
+            frame.add(0)
+            list.add(list.first())
         }
     }
 
 
-    return """
+
+
+    val text = """
   {
     target: ['h$number'], 
-    frames: [0, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91, 100],
+    frames: $frame,
     scaleX: $list,
     scaleY: $list
   }
   """
+    Log.d("ASdgasdgasdg",text)
+    return text
 }
 
 @Composable
@@ -753,10 +815,10 @@ public fun CircleSpreadMotionLoading() {
     val progress by rememberInfiniteTransition().animateFloat(
         initialValue = 0f,
         targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(6000, easing = LinearEasing))
+        animationSpec = infiniteRepeatable(tween(2000, easing = LinearEasing))
     )
 
-    val transitions = (1..12).map { getString(it) }.joinToString(",")
+    val transitions = remember { (1..20).map { getString(it) }.joinToString(",") }
 
     Column {
         MotionLayout(
@@ -797,11 +859,11 @@ public fun CircleSpreadMotionLoading() {
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White),
-            debug = EnumSet.of(MotionLayoutDebugFlags.SHOW_ALL)
+//            debug = EnumSet.of(MotionLayoutDebugFlags.SHOW_ALL)
         ) {
             val colors = arrayListOf(Color.Red, Color.Green, Color.Blue, Color.Cyan, Color.Yellow)
 
-            for (i in 1..12) {
+            for (i in 1..20) {
                 Box(
                     modifier = Modifier
                         .layoutId("h$i", "circle")
