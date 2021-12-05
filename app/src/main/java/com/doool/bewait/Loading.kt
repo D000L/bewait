@@ -13,7 +13,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.layoutId
 
@@ -106,13 +105,11 @@ fun WaveLoading(count: Int = 7, duration: Int = 1000, delay: Int = 300) {
 
     Row() {
         for (i in 0 until count) {
-            val itemProgress = progress - delay * i
-
-            val scale = when (itemProgress.toFloat()) {
-                in 0f..duration / 2f -> itemProgress.toFloat() / duration.toFloat()
-                in duration / 2f..duration.toFloat() -> 1f - (itemProgress.toFloat() / duration.toFloat())
-                else -> 0f
+            val itemProgress by derivedStateOf {
+                (progress - delay * i).toFloat()
             }
+
+            val scale = AnimationUtils.toScale(itemProgress, duration.toFloat())
 
             Box(
                 modifier = Modifier
@@ -157,31 +154,35 @@ fun BoxBoundLoading(count: Int = 5, duration: Int = 450, delay: Int = 120) {
         animationSpec = infiniteRepeatable(tween(totalDuration, easing = LinearEasing))
     )
 
-    val easing = remember { CubicBezierEasing(0.42f, 0f, 0.58f, 1.0f) }
-
     Row(
         Modifier
-            .height(60.dp)
-            .padding(horizontal = 10.dp),
+            .height(60.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         for (i in 0 until count) {
-            val start = delay * i
-            val progress = progress - start
+            val itemProgress by derivedStateOf {
+                val start = delay * i
+                (progress - start).toFloat()
+            }
 
-            val scale =
-                if (0 <= progress && progress <= duration.toFloat() / 2) progress.toFloat() / duration.toFloat()
-                else if (duration.toFloat() / 2 < progress && progress <= duration) 1f - (progress.toFloat() / duration.toFloat())
-                else 0f
+            val scale = AnimationUtils.toScale(itemProgress, duration.toFloat())
 
             Box(
                 modifier = Modifier
                     .size(width = 6.dp, height = 20.dp)
-                    .scale(scaleX = 1f, scaleY = 1f + easing.transform(scale) * 4)
+                    .scale(scaleX = 1f, scaleY = 1f + FastOutFastInEasing.transform(scale) * 4)
                     .background(Color.Blue)
             )
         }
+    }
+}
+
+object AnimationUtils {
+    fun toScale(progress: Float, duration: Float = 1f) = when (progress) {
+        in 0f..duration / 2f -> progress / duration
+        in duration / 2f..duration -> 1f - (progress / duration)
+        else -> 0f
     }
 }
 
@@ -196,51 +197,36 @@ fun GridCardLoading(duration: Int = 600, delay: Int = 200) {
         animationSpec = infiniteRepeatable(tween(totalDuration, easing = LinearEasing))
     )
 
-    val easing = remember { CubicBezierEasing(0.42f, 0f, 0.58f, 1.0f) }
-
     Box(
         Modifier
             .height(60.dp)
-            .padding(horizontal = 10.dp),
     ) {
-        val delayList = listOf(
-            0,
-            delay,
-            delay * 2,
-            delay,
-            delay * 2,
-            delay * 3,
-            delay * 2,
-            delay * 3,
-            delay * 4
-        )
+        val delayList = listOf(0, 1, 2, 1, 2, 3, 2, 3, 4)
         val posList = listOf(
-            DpOffset(0.dp, 0.dp),
-            DpOffset(10.dp, 0.dp),
-            DpOffset(20.dp, 0.dp),
-            DpOffset(0.dp, 10.dp),
-            DpOffset(10.dp, 10.dp),
-            DpOffset(20.dp, 10.dp),
-            DpOffset(0.dp, 20.dp),
-            DpOffset(10.dp, 20.dp),
-            DpOffset(20.dp, 20.dp),
+            Pair(0, 0),
+            Pair(1, 0),
+            Pair(2, 0),
+            Pair(0, 1),
+            Pair(1, 1),
+            Pair(2, 1),
+            Pair(0, 2),
+            Pair(1, 2),
+            Pair(2, 2)
         )
 
         for (i in 0 until 9) {
-            val offset = posList[i]
-            val start = delayList[i]
-            val progress = progress - start
+            val itemProgress by derivedStateOf {
+                val start = delay * delayList[i]
+                (progress - start).toFloat()
+            }
 
-            val scale =
-                if (0 <= progress && progress <= duration.toFloat() / 2) progress.toFloat() / duration.toFloat()
-                else if (duration.toFloat() / 2 < progress && progress <= duration) 1f - (progress.toFloat() / duration.toFloat())
-                else 0f
+            val scale = AnimationUtils.toScale(itemProgress, duration.toFloat())
 
             Box(
                 modifier = Modifier
                     .size(width = 10.dp, height = 10.dp)
-                    .offset(offset.x, offset.y)
-                    .scale(1f - easing.transform(scale) * 2)
+                    .offset(10.dp * posList[i].first, 10.dp * posList[i].second)
+                    .scale(1f - FastOutFastInEasing.transform(scale) * 2)
                     .background(Color.Blue)
             )
         }
@@ -266,7 +252,6 @@ fun CircleSpreadLoading(radius: Int = 80) {
     BoxWithConstraints(
         Modifier
             .height(80.dp)
-            .padding(horizontal = 10.dp),
     ) {
         val density = LocalDensity.current
         val center = with(density) { Offset(maxWidth.toPx() / 2f, maxHeight.toPx() / 2f) }
@@ -278,11 +263,8 @@ fun CircleSpreadLoading(radius: Int = 80) {
 
             val delay = delay * i
 
-            val realProgress = (progress - delay) % 1f
-            val scale =
-                if (0f <= realProgress && realProgress <= duration / 2) (realProgress) / duration
-                else if (duration / 2 <= realProgress && realProgress <= duration) 1f - ((realProgress) / duration)
-                else 0f
+            val itemProgress = (progress - delay) % 1f
+            val scale = AnimationUtils.toScale(itemProgress, duration)
 
             Box(
                 modifier = Modifier
