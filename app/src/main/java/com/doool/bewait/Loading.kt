@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -15,16 +16,70 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.layoutId
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun Loadings(modifier: Modifier = Modifier) {
-    Column(modifier) {
-        BoxRotationLoading()
-        WaveLoading(7, 1000, 300)
-        BoxLoading()
-        BoxBoundLoading(5, 450, 120)
-        GridCardLoading(600, 200)
-        CircleSpreadLoading(80)
+    HorizontalPager(modifier = modifier, count = 7) {
+        when (it) {
+            0 -> BoxRotationLoading()
+            1 -> WaveLoading(7, 1000, 300)
+            2 -> BoxLoading()
+            3 -> BoxBoundLoading(5, 450, 120)
+            4 -> GridCardLoading(600, 200)
+            5 -> CircleSpreadLoading(80)
+            6 -> CircleTailLoading()
+        }
+    }
+}
+
+@Composable
+fun CircleTailLoading() {
+    var progress by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(Unit) {
+        val start = System.currentTimeMillis()
+        while (true) {
+            withInfiniteAnimationFrameMillis {
+                progress = (System.currentTimeMillis() - start).toFloat() / 2000f
+            }
+        }
+    }
+
+    val radius = 80
+    val delay = 0.05f
+    val duration = 1f
+
+    val boxDegree = (300 * progress) % 360
+
+    Box(
+        modifier = Modifier
+            .defaultMinSize(60.dp, 60.dp)
+            .rotate(boxDegree),
+        contentAlignment = Alignment.Center
+    ) {
+        for (i in 0 until 6) {
+            val itemProgress = (progress - delay * i) % 1f
+
+            val itemDegree = when (itemProgress) {
+                in 0f..0.8f -> 360f * FastOutFastInEasing.transform(itemProgress * (10f / 8f))
+                else -> 0
+            }
+            val x = radius * Math.cos(Math.toRadians(itemDegree.toDouble()))
+            val y = radius * Math.sin(Math.toRadians(itemDegree.toDouble()))
+
+            val scale = AnimationUtils.toScale(itemProgress, duration)
+
+            Box(
+                modifier = Modifier
+                    .size(size = 10.dp)
+                    .graphicsLayer(translationX = x.toFloat(), translationY = y.toFloat())
+                    .scale(1f - scale)
+                    .background(Color.Blue, CircleShape)
+            )
+        }
     }
 }
 
@@ -51,11 +106,7 @@ fun BoxRotationLoading(modifier: Modifier = Modifier, size: Dp = 20.dp, distance
         contentAlignment = Alignment.Center
     ) {
 
-        val scale = when (progress) {
-            in 0.0f..0.5f -> 1f - progress
-            in 0.5f..1f -> progress
-            else -> 0f
-        }
+        val scale = 1f - AnimationUtils.toScale(progress)
 
         val position = when (progress) {
             in 0.0f..0.5f -> Offset(progress * 2 * distancePx, 0f)
@@ -155,8 +206,7 @@ fun BoxBoundLoading(count: Int = 5, duration: Int = 450, delay: Int = 120) {
     )
 
     Row(
-        Modifier
-            .height(60.dp),
+        Modifier.height(60.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -197,10 +247,7 @@ fun GridCardLoading(duration: Int = 600, delay: Int = 200) {
         animationSpec = infiniteRepeatable(tween(totalDuration, easing = LinearEasing))
     )
 
-    Box(
-        Modifier
-            .height(60.dp)
-    ) {
+    Box(Modifier.height(30.dp)) {
         val delayList = listOf(0, 1, 2, 1, 2, 3, 2, 3, 4)
         val posList = listOf(
             Pair(0, 0),
@@ -249,21 +296,22 @@ fun CircleSpreadLoading(radius: Int = 80) {
     val delay = 1f / 12f
     val duration = 0.6f
 
-    BoxWithConstraints(
-        Modifier
-            .height(80.dp)
+    Box(
+        modifier = Modifier.defaultMinSize(80.dp, 80.dp),
+        contentAlignment = Alignment.Center
     ) {
-        val density = LocalDensity.current
-        val center = with(density) { Offset(maxWidth.toPx() / 2f, maxHeight.toPx() / 2f) }
-
         for (i in 0 until 12) {
-            val degree = i * 30.0
-            val x = radius * Math.cos(Math.toRadians(degree)) + center.x
-            val y = radius * Math.sin(Math.toRadians(degree)) + center.y
+            val (x, y) = remember(i, radius) {
+                val degree = i * 30.0
+                Pair(
+                    radius * Math.cos(Math.toRadians(degree)),
+                    radius * Math.sin(Math.toRadians(degree))
+                )
+            }
 
-            val delay = delay * i
-
-            val itemProgress = (progress - delay) % 1f
+            val itemProgress by derivedStateOf {
+                (progress - delay * i) % 1f
+            }
             val scale = AnimationUtils.toScale(itemProgress, duration)
 
             Box(

@@ -22,9 +22,9 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
                     Row(Modifier.fillMaxSize()) {
-                        Loadings(Modifier.weight(1f))
-                        Box(Modifier.fillMaxHeight().width(5.dp).background(Color.Gray))
-                        MotionLoadings(Modifier.weight(1f))
+                        Loadings(Modifier.fillMaxSize())
+//                        Box(Modifier.fillMaxHeight().width(5.dp).background(Color.Gray))
+//                        MotionLoadings(Modifier.weight(1f))
                     }
                 }
             }

@@ -21,6 +21,7 @@ import java.util.*
 @Composable
 fun MotionLoadings(modifier: Modifier = Modifier) {
     Column(modifier) {
+        CircleRotationMotionLoading()
         BoxRotationMotionLoading()
         WaveMotionLoading()
         BoxMotionLoading()
@@ -29,8 +30,6 @@ fun MotionLoadings(modifier: Modifier = Modifier) {
         CircleSpreadMotionLoading()
     }
 }
-
-
 
 @Composable
 fun BoxRotationMotionLoading(modifier: Modifier = Modifier, distance: Int = 120) {
@@ -181,13 +180,13 @@ fun CircleRotationMotionLoading(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .layoutId("h1", "h1")
                 .size(15.dp)
-                .background(Color.White, shape = CircleShape)
+                .background(Color.Black, shape = CircleShape)
         )
         Box(
             modifier = Modifier
                 .layoutId("h2", "h2")
                 .size(15.dp)
-                .background(Color.White, shape = CircleShape)
+                .background(Color.Black, shape = CircleShape)
         )
 
 //        Box(
@@ -198,7 +197,6 @@ fun CircleRotationMotionLoading(modifier: Modifier = Modifier) {
 //        )
     }
 }
-
 
 
 @Composable
@@ -466,14 +464,13 @@ fun BoxBounceMotionLoading() {
 }
 
 
-
 private fun getString(number: Int): String {
     val frame = mutableListOf<Int>()
     val list = mutableListOf<Float>()
     val term = 8
 
-    if(number<=12) {
-        if(number>9){
+    if (number <= 12) {
+        if (number > 9) {
             for (j in -4..4) {
                 val number = number - 12
                 val f = number * term + j * 6
@@ -492,7 +489,7 @@ private fun getString(number: Int): String {
             }
         }
 
-    }else {
+    } else {
         for (j in -4..4) {
             val number = number
             val f = number * term + j * 6
@@ -501,35 +498,33 @@ private fun getString(number: Int): String {
                 list.add(1f - Math.abs(j * 0.25f))
             }
         }
-        if(frame.contains(100) == false){
+        if (frame.contains(100) == false) {
             frame.add(100)
             list.add(list.lastOrNull() ?: 0f)
-        }else{
+        } else {
             val index = frame.indexOf(100)
             list[index] = 0f
         }
-        if(frame.contains(0) == false){
+        if (frame.contains(0) == false) {
             frame.add(0)
             list.add(list.first())
         }
     }
 
-    if(number <= 12){
+    if (number <= 12) {
 
-        if(frame.contains(100) == false){
+        if (frame.contains(100) == false) {
             frame.add(100)
             list.add(list.lastOrNull() ?: 0f)
-        }else{
+        } else {
             val index = frame.indexOf(100)
             list[index] = 0f
         }
-        if(frame.contains(0) == false){
+        if (frame.contains(0) == false) {
             frame.add(0)
             list.add(list.first())
         }
     }
-
-
 
 
     val text = """
@@ -540,7 +535,7 @@ private fun getString(number: Int): String {
     scaleY: $list
   }
   """
-    Log.d("ASdgasdgasdg",text)
+    Log.d("ASdgasdgasdg", text)
     return text
 }
 
