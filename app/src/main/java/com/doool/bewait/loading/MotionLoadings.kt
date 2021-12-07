@@ -1,9 +1,11 @@
-package com.doool.bewait
+package com.doool.bewait.loading
 
 import android.util.Log
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,18 +18,23 @@ import androidx.constraintlayout.compose.MotionLayout
 import androidx.constraintlayout.compose.MotionLayoutDebugFlags
 import androidx.constraintlayout.compose.MotionScene
 import androidx.constraintlayout.compose.layoutId
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
 import java.util.*
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun MotionLoadings(modifier: Modifier = Modifier) {
-    Column(modifier) {
-        CircleRotationMotionLoading()
-        BoxRotationMotionLoading()
-        WaveMotionLoading()
-        BoxMotionLoading()
-        BoxBounceMotionLoading()
-        GridCardMotionLoading()
-        CircleSpreadMotionLoading()
+    HorizontalPager(modifier = modifier, count = 7) {
+        when (it) {
+            0 -> CircleRotationMotionLoading()
+            1 -> BoxRotationMotionLoading()
+            2 -> WaveMotionLoading()
+            3 -> BoxMotionLoading()
+            4 -> BoxBounceMotionLoading()
+            5 -> GridCardMotionLoading()
+            6 -> CircleSpreadMotionLoading()
+        }
     }
 }
 
@@ -107,7 +114,7 @@ fun BoxRotationMotionLoading(modifier: Modifier = Modifier, distance: Int = 120)
 }
 
 @Composable
-fun CircleRotationMotionLoading(modifier: Modifier = Modifier) {
+fun CircleRotationMotionLoading() {
     val progress by rememberInfiniteTransition().animateFloat(
         initialValue = 0f,
         targetValue = 1f,
@@ -208,22 +215,23 @@ public fun WaveMotionLoading() {
     )
 
     MotionLayout(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .background(Color.White),
+        modifier = Modifier.background(Color.White),
         motionScene = MotionScene(
             """{
                 ConstraintSets: {   // all ConstraintSets
-                  start:   {
-                      h1: { },
-                      h2: { translationX: 80 },
-                      h3: { translationX: 160 },
+                  start: {
+                      Variables: {
+                        distance: { from : -160, step : 80 } ,
+                        mylist: { tag: 'circle' },
+                      },
+                      Generate: { mylist: { translationX : 'distance'} },
                   },
-                  end: {
-                      h1: {},
-                      h2: { translationX: 80 },
-                      h3: { translationX: 160 },
+                  end:  {
+                        Variables: {
+                         distance: { from : -160, step : 80 } ,
+                          mylist: { tag: 'circle' },
+                        },
+                        Generate: { mylist: { translationX : 'distance'} },
                   }
                 },
                 Transitions: {           
@@ -245,19 +253,19 @@ public fun WaveMotionLoading() {
     ) {
         Box(
             modifier = Modifier
-                .layoutId("h1", "h1")
+                .layoutId("h1", "circle")
                 .size(20.dp)
                 .background(Color.Red, shape = CircleShape)
         )
         Box(
             modifier = Modifier
-                .layoutId("h2", "h2")
+                .layoutId("h2", "circle")
                 .size(20.dp)
                 .background(Color.Green, shape = CircleShape)
         )
         Box(
             modifier = Modifier
-                .layoutId("h3", "h3")
+                .layoutId("h3", "circle")
                 .size(20.dp)
                 .background(Color.Blue, shape = CircleShape)
         )
@@ -274,10 +282,7 @@ public fun BoxMotionLoading() {
     )
 
     MotionLayout(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .background(Color.White),
+        modifier = Modifier.background(Color.White),
         motionScene = MotionScene(
             """{
                 ConstraintSets: {   // all ConstraintSets
@@ -327,10 +332,9 @@ fun GridCardMotionLoading() {
         )
     )
 
-    Column {
-        MotionLayout(
-            motionScene = MotionScene(
-                """{
+    MotionLayout(
+        motionScene = MotionScene(
+            """{
                 ConstraintSets: {   // all ConstraintSets
                   start: {
                       h1: { width : 10, height: 10, },
@@ -375,21 +379,17 @@ fun GridCardMotionLoading() {
                   }
                 }
             }"""
-            ),
-            progress = progress,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-        ) {
-            val colors = arrayListOf(Color.Black, Color.Green, Color.Blue, Color.Cyan)
+        ),
+        progress = progress
+    ) {
+        val colors = arrayListOf(Color.Black, Color.Green, Color.Blue, Color.Cyan)
 
-            for (i in 1..9) {
-                Box(
-                    modifier = Modifier
-                        .layoutId("h$i", "h$i")
-                        .background(colors[i % colors.size])
-                )
-            }
+        for (i in 1..9) {
+            Box(
+                modifier = Modifier
+                    .layoutId("h$i", "h$i")
+                    .background(colors[i % colors.size])
+            )
         }
     }
 }
@@ -407,24 +407,23 @@ fun BoxBounceMotionLoading() {
         )
     )
 
-    Column {
-        MotionLayout(
-            motionScene = MotionScene(
-                """{
+    MotionLayout(
+        motionScene = MotionScene(
+            """{
                 ConstraintSets: {   // all ConstraintSets
                   start: {
                       Variables: {
-                        distance: { from :  0, step : 40 } ,
+                        distance: { from :  -120, step : 40 } ,
                         mylist: { tag: 'box' },
                       },
-                      Generate: { mylist: { width : 10, height : 20, translationX : 'distance', translationY : 60 } },
+                      Generate: { mylist: { width : 10, height : 20, translationX : 'distance' } },
                   },
                   end:  {
                         Variables: {
-                         distance: { from :  0, step : 40 } ,
+                         distance: { from :  -120, step : 40 } ,
                           mylist: { tag: 'box' },
                         },
-                        Generate: { mylist: { width : 10, height : 20, translationX : 'distance', translationY : 60 } },
+                        Generate: { mylist: { width : 10, height : 20, translationX : 'distance' } },
                     }
                 },
                Transitions: {           
@@ -443,22 +442,18 @@ fun BoxBounceMotionLoading() {
                   }
                 }
             }"""
-            ),
-            progress = progress,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
-            debug = EnumSet.of(MotionLayoutDebugFlags.SHOW_ALL)
-        ) {
-            val colors = arrayListOf(Color.Red, Color.Green, Color.Blue, Color.Cyan, Color.Yellow)
+        ),
+        progress = progress,
+        debug = EnumSet.of(MotionLayoutDebugFlags.SHOW_ALL)
+    ) {
+        val colors = arrayListOf(Color.Red, Color.Green, Color.Blue, Color.Cyan, Color.Yellow)
 
-            for (i in 1..5) {
-                Box(
-                    modifier = Modifier
-                        .layoutId("h$i", "box")
-                        .background(colors[i % colors.size])
-                )
-            }
+        for (i in 1..5) {
+            Box(
+                modifier = Modifier
+                    .layoutId("h$i", "box")
+                    .background(colors[i % colors.size])
+            )
         }
     }
 }
@@ -482,7 +477,7 @@ private fun getString(number: Int): String {
         }
         for (j in -4..4) {
             val number = number
-            val f = number * term + j * 5
+            val f = number * term + j * 6
             if (0 <= f && f <= 100) {
                 frame.add(f)
                 list.add(1f - Math.abs(j * 0.25f))
@@ -549,10 +544,9 @@ public fun CircleSpreadMotionLoading() {
 
     val transitions = remember { (1..20).map { getString(it) }.joinToString(",") }
 
-    Column {
-        MotionLayout(
-            motionScene = MotionScene(
-                """{
+    MotionLayout(
+        motionScene = MotionScene(
+            """{
                 ConstraintSets: {   // all ConstraintSets
                   start: {
                       Variables: {
@@ -583,23 +577,19 @@ public fun CircleSpreadMotionLoading() {
                   }
                 }
             }"""
-            ),
-            progress = progress,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
+        ),
+        progress = progress
 //            debug = EnumSet.of(MotionLayoutDebugFlags.SHOW_ALL)
-        ) {
-            val colors = arrayListOf(Color.Red, Color.Green, Color.Blue, Color.Cyan, Color.Yellow)
+    ) {
+        val colors = arrayListOf(Color.Red, Color.Green, Color.Blue, Color.Cyan, Color.Yellow)
 
-            for (i in 1..20) {
-                Box(
-                    modifier = Modifier
-                        .layoutId("h$i", "circle")
-                        .size(10.dp)
-                        .background(colors[i % colors.size], shape = CircleShape)
-                )
-            }
+        for (i in 1..20) {
+            Box(
+                modifier = Modifier
+                    .layoutId("h$i", "circle")
+                    .size(10.dp)
+                    .background(colors[i % colors.size], shape = CircleShape)
+            )
         }
     }
 }
