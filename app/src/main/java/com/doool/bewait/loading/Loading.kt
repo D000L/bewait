@@ -1,12 +1,18 @@
 package com.doool.bewait.loading
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collection.mutableVectorOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -23,13 +29,16 @@ import androidx.constraintlayout.compose.layoutId
 import com.doool.bewait.AnimationUtils
 import com.doool.bewait.easing.FastOutFastInEasing
 import com.doool.bewait.easing.KeyframeEasing
+import com.doool.bewait.easing.QuickEasing
+import com.doool.gooey.GooeyBox
+import com.doool.gooey.GooeyIntensity
 import com.google.accompanist.pager.ExperimentalPagerApi
 
 @OptIn(ExperimentalPagerApi::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun Loadings(modifier: Modifier = Modifier) {
     LazyVerticalGrid(modifier = modifier, cells = GridCells.Adaptive(80.dp)) {
-        items(12) {
+        items(15) {
             Box(
                 modifier = Modifier
                     .height(80.dp)
@@ -50,6 +59,9 @@ fun Loadings(modifier: Modifier = Modifier) {
                     9 -> GridCardLoading(600, 200)
                     10 -> FadeDotLoading()
                     11 -> FoldRectLoading()
+                    12 -> GooeyLoading()
+                    13 -> GooeyLoading2()
+                    14 -> GooeyLoading3()
                 }
             }
         }
@@ -580,6 +592,168 @@ fun FoldRectLoading() {
     }
 }
 
+@Composable
+fun GooeyLoading() {
+    val progress by rememberInfiniteTransition().animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(2000, easing = LinearEasing))
+    )
+
+    GooeyBox(contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .offset(50.dp * AnimationUtils.to1f0f1f(progress) * 2f - 25.dp, y = 1.dp)
+                .gooey(Color.White, CircleShape)
+        )
+        for (i in 0 until 3) {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .offset(x = 25.dp * i - 25.dp)
+                    .gooey(Color.White, shape = CircleShape)
+            )
+        }
+    }
+}
+
+@Composable
+fun GooeyLoading2() {
+    val progress by rememberInfiniteTransition().animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(2000, easing = LinearEasing))
+    )
+
+    GooeyBox(
+        contentAlignment = Alignment.Center,
+        intensity = GooeyIntensity.Low
+    ) {
+        for (i in 0 until 12) {
+            val (x, y) = remember(i) {
+                val degree = i * 30.0
+                Pair(
+                    80 * Math.cos(Math.toRadians(degree)),
+                    80 * Math.sin(Math.toRadians(degree))
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .size(size = 6.dp)
+                    .graphicsLayer(translationX = x.toFloat(), translationY = y.toFloat())
+                    .gooey(Color.White, CircleShape)
+            )
+        }
+
+        val degree = progress * 360.0
+
+        Box(
+            Modifier
+                .padding(start = 1.dp, top = 1.dp)
+                .size(size = 6.dp)
+                .graphicsLayer(
+                    translationX = 80 * Math
+                        .cos(Math.toRadians(degree))
+                        .toFloat(),
+                    translationY = 80 * Math
+                        .sin(Math.toRadians(degree))
+                        .toFloat()
+                )
+                .gooey(Color.White, CircleShape)
+        )
+    }
+}
+
+/*
+ * @ design by [Vincent Durand] (https://codepen.io/onediv/pen/pjgNqJ)
+ */
+@Composable
+fun GooeyLoading3() {
+    var isOk by remember { mutableStateOf(true) }
+
+    LaunchedEffect(key1 = Unit, block = {
+        var time = System.currentTimeMillis()
+        while (true) {
+            withInfiniteAnimationFrameMillis {
+                val current = System.currentTimeMillis()
+                if (current - time > 1000) {
+                    time = current
+                    isOk = !isOk
+                }
+            }
+        }
+    })
+
+    Box() {
+        GooeyBox(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+            intensity = GooeyIntensity.High
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .offset(x = -21.dp)
+                    .gooey(Color(0xFF243548), CircleShape)
+            )
+            Box(
+                modifier = Modifier
+                    .size(14.dp)
+                    .gooey(Color(0xFF243548), CircleShape)
+
+            )
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .offset(x = 21.dp)
+                    .gooey(Color(0xFF243548), CircleShape)
+            )
+        }
+        GooeyBox(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+            intensity = GooeyIntensity.Medium
+        ) {
+            val progress by animateFloatAsState(
+                targetValue = if (isOk) 0f else 1f, animationSpec = tween(
+                    400,
+                    easing = LinearEasing
+                )
+            )
+
+            if (0f < progress && progress < 1f) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .offset(x = 28.dp * QuickEasing.transform(progress) - 14.dp)
+                        .gooey(Color.White.copy(0.7f), CircleShape)
+                )
+            }
+
+            val color by  animateColorAsState(
+                targetValue = if (isOk) Color.White else Color(0xFF3CCC97)
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(
+                        width = 26.dp,
+                        height = 26.dp - 12.dp * AnimationUtils.to1f0f1f(progress) * 2
+                    )
+                    .offset(x = 41.dp * progress - 20.5.dp)
+                    .gooey(color, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    modifier = Modifier.size(12.dp),
+                    imageVector = if(isOk) Icons.Default.Close else Icons.Default.Add,
+                    contentDescription = null
+                )
+            }
+        }
+    }
+}
 
 
 
