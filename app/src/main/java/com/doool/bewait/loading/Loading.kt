@@ -12,7 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
-import androidx.compose.runtime.collection.mutableVectorOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -27,6 +26,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.layoutId
 import com.doool.bewait.AnimationUtils
+import com.doool.bewait.easing.BounceEasing
 import com.doool.bewait.easing.FastOutFastInEasing
 import com.doool.bewait.easing.KeyframeEasing
 import com.doool.bewait.easing.QuickEasing
@@ -38,7 +38,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 @Composable
 fun Loadings(modifier: Modifier = Modifier) {
     LazyVerticalGrid(modifier = modifier, cells = GridCells.Adaptive(80.dp)) {
-        items(15) {
+        items(17) {
             Box(
                 modifier = Modifier
                     .height(80.dp)
@@ -62,6 +62,8 @@ fun Loadings(modifier: Modifier = Modifier) {
                     12 -> GooeyLoading()
                     13 -> GooeyLoading2()
                     14 -> GooeyLoading3()
+                    15 -> GooeyLoading4()
+                    16 -> GooeyLoading5()
                 }
             }
         }
@@ -137,7 +139,7 @@ fun ChaseCircleLoading() {
                 modifier = Modifier
                     .size(size = 10.dp)
                     .graphicsLayer(translationX = x.toFloat(), translationY = y.toFloat())
-                    .scale(1f - scale)
+                    .scale(scale / 2f + 0.5f)
                     .background(Color.White, CircleShape)
             )
         }
@@ -203,12 +205,12 @@ fun BounceRectLoading(count: Int = 5, duration: Int = 450, delay: Int = 120) {
                 (progress - start).toFloat()
             }
 
-            val scale = AnimationUtils.to1f0f1f(itemProgress, duration.toFloat())
+            val scale = AnimationUtils.to0f1f0f(itemProgress, duration.toFloat())
 
             Box(
                 modifier = Modifier
                     .size(width = 6.dp, height = 20.dp)
-                    .scale(scaleX = 1f, scaleY = 1f + FastOutFastInEasing.transform(scale) * 4)
+                    .scale(scaleX = 1f, scaleY = 1f + FastOutFastInEasing.transform(scale) * 2)
                     .background(Color.White)
             )
         }
@@ -242,7 +244,7 @@ fun RotationBoxLoading(modifier: Modifier = Modifier, size: Dp = 20.dp, distance
         contentAlignment = Alignment.Center
     ) {
 
-        val scale = 1f - AnimationUtils.to1f0f1f(progress)
+        val scale = AnimationUtils.to0f1f0f(progress) / 2f + 0.5f
 
         val position = when (progress) {
             in 0.0f..0.5f -> Offset(progress * 2 * distancePx, 0f)
@@ -332,15 +334,15 @@ fun SwingCircleLoading() {
         Box(
             Modifier
                 .size(30.dp)
-                .graphicsLayer(translationX = 30f, translationY = -24f)
-                .scale(AnimationUtils.to1f0f1f(progress2, 1f) * 2)
+                .offset(10.dp, -8.dp)
+                .scale(AnimationUtils.to0f1f0f(progress2))
                 .background(Color.White, shape = CircleShape)
         )
         Box(
             Modifier
                 .size(30.dp)
-                .graphicsLayer(translationX = 30f, translationY = 24f)
-                .scale(AnimationUtils.to1f0f1f(progress3, 1f) * 2)
+                .offset(10.dp, 8.dp)
+                .scale(AnimationUtils.to0f1f0f(progress3))
                 .background(Color.White, shape = CircleShape)
         )
     }
@@ -368,12 +370,12 @@ fun WaveCircleLoading(count: Int = 7, duration: Int = 1000, delay: Int = 300) {
                 (progress - delay * i).toFloat()
             }
 
-            val scale = AnimationUtils.to1f0f1f(itemProgress, duration.toFloat())
+            val scale = AnimationUtils.to0f1f0f(itemProgress, duration.toFloat())
 
             Box(
                 modifier = Modifier
                     .size(20.dp)
-                    .scale(scale * 2)
+                    .scale(scale)
                     .background(Color.White, shape = CircleShape)
             )
         }
@@ -415,13 +417,13 @@ fun ChaseDotLoading() {
             val itemProgress by derivedStateOf {
                 (progress - delay * i) % 1f
             }
-            val scale = AnimationUtils.to1f0f1f(itemProgress)
+            val scale = AnimationUtils.to0f1f0f(itemProgress)
 
             Box(
                 modifier = Modifier
                     .size(size = 6.dp)
                     .graphicsLayer(translationX = x.toFloat(), translationY = y.toFloat())
-                    .scale(scale * 2)
+                    .scale(scale)
                     .background(Color.White, CircleShape)
             )
         }
@@ -463,13 +465,13 @@ fun GridCardLoading(duration: Int = 600, delay: Int = 200) {
                 (progress - start).toFloat()
             }
 
-            val scale = AnimationUtils.to1f0f1f(itemProgress, duration.toFloat())
+            val scale = AnimationUtils.to0f1f0f(itemProgress, duration.toFloat())
 
             Box(
                 modifier = Modifier
                     .size(width = 10.dp, height = 10.dp)
                     .offset(10.dp * posList[i].first, 10.dp * posList[i].second)
-                    .scale(1f - FastOutFastInEasing.transform(scale) * 2)
+                    .scale(1f - FastOutFastInEasing.transform(scale))
                     .background(Color.White)
             )
         }
@@ -601,20 +603,20 @@ fun GooeyLoading() {
     )
 
     GooeyBox(contentAlignment = Alignment.Center) {
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .offset(50.dp * AnimationUtils.to1f0f1f(progress) * 2f - 25.dp, y = 1.dp)
-                .gooey(Color.White, CircleShape)
-        )
         for (i in 0 until 3) {
             Box(
                 modifier = Modifier
                     .size(10.dp)
                     .offset(x = 25.dp * i - 25.dp)
-                    .gooey(Color.White, shape = CircleShape)
+                    .gooey(Color(0xFF4DFF94), shape = CircleShape)
             )
         }
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .offset(50.dp * AnimationUtils.to0f1f0f(progress) - 25.dp)
+                .gooey(Color(0xFFC4FF70), CircleShape)
+        )
     }
 }
 
@@ -650,7 +652,6 @@ fun GooeyLoading2() {
 
         Box(
             Modifier
-                .padding(start = 1.dp, top = 1.dp)
                 .size(size = 6.dp)
                 .graphicsLayer(
                     translationX = 80 * Math
@@ -687,7 +688,6 @@ fun GooeyLoading3() {
 
     Box() {
         GooeyBox(
-            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
             intensity = GooeyIntensity.High
         ) {
@@ -711,7 +711,6 @@ fun GooeyLoading3() {
             )
         }
         GooeyBox(
-            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
             intensity = GooeyIntensity.Medium
         ) {
@@ -722,32 +721,34 @@ fun GooeyLoading3() {
                 )
             )
 
+            val color by animateColorAsState(
+                targetValue = if (isOk) Color.White else Color(0xFF4DFF94)
+            )
+
             if (0f < progress && progress < 1f) {
                 Box(
                     modifier = Modifier
                         .size(10.dp)
                         .offset(x = 28.dp * QuickEasing.transform(progress) - 14.dp)
-                        .gooey(Color.White.copy(0.7f), CircleShape)
+                        .gooey(color, CircleShape)
                 )
             }
-
-            val color by  animateColorAsState(
-                targetValue = if (isOk) Color.White else Color(0xFF3CCC97)
-            )
 
             Box(
                 modifier = Modifier
                     .size(
                         width = 26.dp,
-                        height = 26.dp - 12.dp * AnimationUtils.to1f0f1f(progress) * 2
+                        height = 26.dp - 12.dp * AnimationUtils.to1f0f1f(progress)
                     )
                     .offset(x = 41.dp * progress - 20.5.dp)
                     .gooey(color, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    modifier = Modifier.size(12.dp),
-                    imageVector = if(isOk) Icons.Default.Close else Icons.Default.Add,
+                    modifier = Modifier
+                        .size(12.dp)
+                        .alpha(1f - AnimationUtils.to1f0f1f(QuickEasing.transform(progress))),
+                    imageVector = if (isOk) Icons.Default.Close else Icons.Default.Add,
                     contentDescription = null
                 )
             }
@@ -755,5 +756,88 @@ fun GooeyLoading3() {
     }
 }
 
+@Composable
+fun GooeyLoading4() {
+    val progress by rememberInfiniteTransition().animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(2400, easing = LinearEasing))
+    )
+
+    GooeyBox(contentAlignment = Alignment.Center) {
+        val degree = when (progress) {
+            in 0f..0.25f -> progress * 4 * 180.0
+            in 0.25f..0.5f -> (progress - 0.25f) * 4 * -180.0
+            in 0.5f..0.75f -> (progress - 0.5f) * 4 * -180.0 + 180.0
+            else -> (progress - 0.75f) * 4 * 180.0 + 180.0
+        }
+
+        val rotate = when (progress) {
+            in 0f..0.25f -> 180f
+            in 0.25f..0.5f -> -180f
+            in 0.5f..0.75f -> -180f
+            else -> 180f
+        }
+
+        val x = when (progress) {
+            in 0f..0.25f -> 12.5.dp
+            in 0.25f..0.5f -> -12.5.dp
+            in 0.5f..0.75f -> -12.5.dp
+            else -> 12.5.dp
+        }
+        for (i in 0 until 3) {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .offset(x = 25.dp * i - 25.dp)
+                    .gooey(Color(0xFF4DFF94), shape = CircleShape)
+            )
+        }
+        Box(
+            modifier = Modifier
+                .rotate(rotate)
+                .size(10.dp)
+                .offset(
+                    x = 12.5.dp * Math
+                        .cos(Math.toRadians(degree))
+                        .toFloat() + x,
+                    y = 12.5.dp * Math
+                        .sin(Math.toRadians(degree))
+                        .toFloat()
+                )
+                .gooey(Color(0xFFC4FF70), CircleShape)
+        )
+    }
+}
+
+@Composable
+fun GooeyLoading5() {
+    val progress by rememberInfiniteTransition().animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            tween<Float>(
+                durationMillis = 1200,
+                easing = BounceEasing
+            )
+        )
+    )
+
+    GooeyBox(contentAlignment = Alignment.Center, intensity = GooeyIntensity.High) {
+        Box(
+            modifier = Modifier
+                .size(16.dp)
+                .offset(y = 20.dp)
+                .gooey(Color(0xFF4DFF94), shape = CircleShape)
+        )
+
+        Box(
+            modifier = Modifier
+                .size(16.dp)
+                .offset(y = 40.dp * AnimationUtils.to0f1f0f(progress) + -20.dp)
+                .gooey(Color(0xFF4DFF94), shape = CircleShape)
+        )
+    }
+}
 
 
