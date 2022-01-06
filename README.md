@@ -1,8 +1,12 @@
-# bewait
+<p align="center">
+<h1 align="center">Bewait</h1>
+</p>
 
-android compose animation sample
+Loading animation sample for android-compose
 
-</br>
+<p align="center">
+  <img src="previews/preivew1.gif" width="50%">
+</p>
 
 ## loading animation
 @ design reference : [tobiasahlin] (https://tobiasahlin.com/spinkit/)

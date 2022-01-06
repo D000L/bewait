@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
                     Row(Modifier.fillMaxSize()) {
-                        Loadings(Modifier.fillMaxSize())
+                        Loadings()
 
 //                        Box(Modifier.fillMaxHeight().width(5.dp).background(Color.Gray))
 //                        MotionLoadings(Modifier.fillMaxSize())
