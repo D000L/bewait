@@ -3,9 +3,13 @@
 </p>
 
 Loading animation sample for android-compose
+</br>
+"gooey-effect" using https://github.com/D000L/Gooey
+
+</br>
 
 <p align="center">
-  <img src="previews/preivew1.gif" width="50%">
+  <img src="previews/preview1.gif" width="50%">
 </p>
 
 ## loading animation
